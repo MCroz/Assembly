@@ -1,0 +1,492 @@
+<?php
+require_once 'excel/excel_reader2.php';
+
+class Excel4Controller extends ControllerBase
+{
+
+	public function readerAction ()
+	{
+		$data = new Spreadsheet_Excel_Reader("C:\Users\RealEstate PH\Desktop\New folder\import7.xls");
+		$extract = array();
+		//echo $data->dump(true,true);
+
+		
+		// create connection to mysql
+		$link = mysql_connect('localhost', 'rs_realestate', 'rs_r34l3st4t3');
+		if (!$link) {
+		    die('Could not connect: ' . mysql_error());
+		}
+		//select realestate database
+		mysql_select_db('ew');
+
+		//create function for inserting data to db
+		function mysql_insert($table, $inserts) {
+		    $values = array_map('mysql_real_escape_string', array_values($inserts));
+		    $keys = array_keys($inserts);
+		        
+		    return mysql_query('INSERT INTO `'.$table.'` (`'.implode('`,`', $keys).'`) VALUES (\''.implode('\',\'', $values).'\')');
+		}
+
+		//mysql_query("ALTER TABLE property_info_tb AUTO_INCREMENT=5000");
+		
+		
+		$corpname = array();
+		$corppos = array();
+		$corpemail = array();
+		$corpmobile= array();
+		$corpphone = array();
+		$corpnotes = array();
+
+		$markname = array();
+		$markpos = array();
+		$markemail = array();
+		$markmobile= array();
+		$markphone = array();
+		$marknotes = array();
+
+		$salesname = array();
+		$salespos = array();
+		$salesemail = array();
+		$salesmobile= array();
+		$salesphone = array();
+		$salesnotes = array();		
+
+		for ($row=2; $row<=$data->rowcount(0); $row++ ) {
+			for ($col=1; $col<= $data->colcount(0); $col++) {
+				switch ($col) {
+					case 1: 
+							$assignedto = $data->val($row,$col,0);
+							//echo $row.$assignedto."<br>";
+					break;
+					case 2:
+							$namecomp = $data->val($row,$col,0);
+							//echo $namecomp;
+					break;
+					case 3:
+							$compadd = $data->val($row,$col,0);
+					break;
+					case 4:
+							$adspackage = $data->val($row,$col,0);
+					break;
+					case 5:
+							$phone1 = $data->val($row,$col,0);
+					break;
+					case 6:
+							$phone2 = $data->val($row,$col,0);
+					break;
+					case 7:
+							$phone3 = $data->val($row,$col,0);
+					break;
+					case 8:
+							$phone4 = $data->val($row,$col,0);
+					break;
+					case 9:
+							$email1 = $data->val($row,$col,0);
+					break;
+					case 10:
+							$email2 = $data->val($row,$col,0);
+					break;
+					case 11:
+							$email3 = $data->val($row,$col,0);
+					break;
+					case 12:
+							$email4 = $data->val($row,$col,0);
+					break;
+					case 13:
+							$compnotes = $data->val($row,$col,0);
+					break;
+					case 14:
+							$storage = $data->val($row,$col,0);
+					break;
+					case 15:
+							$laststorageup = $data->val($row,$col,0);
+					break;
+					case 16:
+							$connections = $data->val($row,$col,0);
+					break;
+					case 17:
+							$area = $data->val($row,$col,0);
+					break;
+					case 18:
+							$target = $data->val($row,$col,0);
+					break;
+					case 19:
+							$aveprice = $data->val($row,$col,0);
+					break;
+					case 20:
+							$paymentmethod = $data->val($row,$col,0);
+					break;
+					case 21:
+							$pendingact = $data->val($row,$col,0);
+					break;	
+					case 22:
+							$newproj = $data->val($row,$col,0);
+					break;
+					//corporate
+					case 23:
+							$corpname[0] = $data->val($row,$col,0);
+							//echo $corpname1;
+					break;	
+					case 24:
+							$corppos1 = $data->val($row,$col,0);
+							$corppos[0] = $data->val($row,$col,0);
+					break;
+					case 25:
+							$corpemail1 = $data->val($row,$col,0);
+							$corpemail[0] = $data->val($row,$col,0);
+					break;	
+					case 26:
+							$corpphone1 = $data->val($row,$col,0);
+							$corpphone[0] = $data->val($row,$col,0);
+					break;
+					case 27:
+							$corpmobile1 = $data->val($row,$col,0);
+							$corpmobile[0] = $data->val($row,$col,0);
+					break;					
+					case 28:
+							$corpnotes1 = $data->val($row,$col,0);
+							$corpnotes[0] = $data->val($row,$col,0);
+					break;
+					case 29:
+							$corpname[1] = $data->val($row,$col,0);
+					break;	
+					case 30:
+							$corppos2 = $data->val($row,$col,0);
+							$corppos[1] = $data->val($row,$col,0);
+					break;
+					case 31:
+							$corpemail2 = $data->val($row,$col,0);
+							$corpemail[1] = $data->val($row,$col,0);
+					break;	
+					case 32:
+							$corpphone2 = $data->val($row,$col,0);
+							$corpphone[1] = $data->val($row,$col,0);
+					break;
+					case 33:
+							$corpmobile2 = $data->val($row,$col,0);
+							$corpmobile[1] = $data->val($row,$col,0);
+					break;					
+					case 34:
+							$corpnotes2 = $data->val($row,$col,0);
+							$corpnotes[1] = $data->val($row,$col,0);
+					break;
+					case 35:
+							$corpname[2] = $data->val($row,$col,0);
+					break;	
+					case 36:
+							$corppos3 = $data->val($row,$col,0);
+							$corppos[2] = $data->val($row,$col,0);
+					break;
+					case 37:
+							$corpemail3 = $data->val($row,$col,0);
+							$corpemail[2] = $data->val($row,$col,0);
+					break;	
+					case 38:
+							$corpphone3 = $data->val($row,$col,0);
+							$corpphone[2] = $data->val($row,$col,0);
+					break;
+					case 39:
+							$corpmobile3 = $data->val($row,$col,0);
+							$corpmobile[2] = $data->val($row,$col,0);
+					break;					
+					case 40:
+							$corpnotes3 = $data->val($row,$col,0);
+							$corpnotes[2] = $data->val($row,$col,0);
+					break;
+					//marketing
+					case 41:
+							$markname[0] = $data->val($row,$col,0);
+					break;	
+					case 42:
+							$markpos[0] = $data->val($row,$col,0);
+					break;
+					case 43:
+							$markemail[0] = $data->val($row,$col,0);
+					break;	
+					case 44:
+							$markphone[0] = $data->val($row,$col,0);
+					break;
+					case 45:
+							$markmobile[0] = $data->val($row,$col,0);
+					break;					
+					case 46:
+							$marknotes[0] = $data->val($row,$col,0);
+					break;
+					case 47:
+							$markname[1] = $data->val($row,$col,0);
+					break;	
+					case 48:
+							$markpos[1] = $data->val($row,$col,0);
+					break;
+					case 49:
+							$markemail[1] = $data->val($row,$col,0);
+					break;	
+					case 50:
+							$markphone[1] = $data->val($row,$col,0);
+					break;
+					case 51:
+							$markmobile[1] = $data->val($row,$col,0);
+					break;					
+					case 52:
+							$marknotes[1] = $data->val($row,$col,0);
+					break;
+					case 53:
+							$markname[2] = $data->val($row,$col,0);
+					break;	
+					case 54:
+							$markpos[2] = $data->val($row,$col,0);
+					break;
+					case 55:
+							$markemail[2] = $data->val($row,$col,0);
+					break;	
+					case 56:
+							$markphone[2] = $data->val($row,$col,0);
+					break;
+					case 57:
+							$markmobile[2] = $data->val($row,$col,0);
+					break;					
+					case 58:
+							$marknotes[2] = $data->val($row,$col,0);
+					break;
+					//sales
+					case 59:
+							$salesname[0] = $data->val($row,$col,0);
+					break;	
+					case 60:
+							$salespos[0] = $data->val($row,$col,0);
+					break;
+					case 61:
+							$salesemail[0] = $data->val($row,$col,0);
+					break;	
+					case 62:
+							$salesphone[0] = $data->val($row,$col,0);
+					break;
+					case 63:
+							$salesmobile[0] = $data->val($row,$col,0);
+					break;					
+					case 64:
+							$salesnotes[0] = $data->val($row,$col,0);
+					break;
+					case 65:
+							$salesname[1] = $data->val($row,$col,0);
+					break;	
+					case 66:
+							$salespos[1] = $data->val($row,$col,0);
+					break;
+					case 67:
+							$salesemail[1] = $data->val($row,$col,0);
+					break;	
+					case 68:
+							$salesphone[1] = $data->val($row,$col,0);
+					break;
+					case 69:
+							$salesmobile[1] = $data->val($row,$col,0);
+					break;					
+					case 70:
+							$salesnotes[1] = $data->val($row,$col,0);
+					break;	
+					case 71:
+							$salesname[2] = $data->val($row,$col,0);
+					break;	
+					case 72:
+							$salespos[2] = $data->val($row,$col,0);
+					break;
+					case 73:
+							$salesemail[2] = $data->val($row,$col,0);
+					break;	
+					case 74:
+							$salesphone[2] = $data->val($row,$col,0);
+					break;
+					case 75:
+							$salesmobile[2] = $data->val($row,$col,0);
+					break;					
+					case 76:
+							$salesnotes[2] = $data->val($row,$col,0);
+					break;
+					//it
+					case 77:
+							$itname[0] = $data->val($row,$col,0);
+					break;	
+					case 78:
+							$itpos[0] = $data->val($row,$col,0);
+					break;
+					case 79:
+							$itemail[0] = $data->val($row,$col,0);
+					break;	
+					case 80:
+							$itphone[0] = $data->val($row,$col,0);
+					break;
+					case 81:
+							$itmobile[0] = $data->val($row,$col,0);
+					break;					
+					case 82:
+							$itnotes[0] = $data->val($row,$col,0);
+					break;
+					case 83:
+							$itname[1] = $data->val($row,$col,0);
+					break;	
+					case 84:
+							$itpos[1] = $data->val($row,$col,0);
+					break;
+					case 85:
+							$itemail[1] = $data->val($row,$col,0);
+					break;	
+					case 86:
+							$itphone[1] = $data->val($row,$col,0);
+					break;
+					case 87:
+							$itmobile[1] = $data->val($row,$col,0);
+					break;					
+					case 88:
+							$itnotes[1] = $data->val($row,$col,0);
+					break;		
+					case 89:
+							$itname[2] = $data->val($row,$col,0);
+					break;	
+					case 90:
+							$itpos[2] = $data->val($row,$col,0);
+					break;
+					case 91:
+							$itemail[2] = $data->val($row,$col,0);
+					break;	
+					case 92:
+							$itphone[2] = $data->val($row,$col,0);
+					break;
+					case 93:
+							$itmobile[2] = $data->val($row,$col,0);
+					break;					
+					case 94:
+							$itnotes[2] = $data->val($row,$col,0);
+					break;																																																																																																																												
+				}
+			}
+			
+			mysql_insert(company_info_tb, array (
+					'address' => $compadd,
+					'company_name' => $namecomp,
+					'assign_into' => $assignedto,
+					'advertising_package' => $adspackage,
+					'phone_number1' => $phone1,
+					'phone_number2' => $phone2,
+					'phone_number3' => $phone3,
+					'phone_number4' => $phone4,
+					'email1' => $email1,
+					'email2' => $email2,
+					'email3' => $email3,
+					'email4' => $email4,
+					'post_notes' => $compnotes,
+					'storage_system' => $storage,
+					'storage_update' => $laststorageup,
+					'connections' => $connections,
+					'area' => $area,
+					'average_price' => $aveprice,
+					'payment_method' => $paymentmethod,
+					'pending_activity' => $pendingact,
+					'date_created' => date("Y-m-d H:i:s:")
+			));
+			// start ng corporate insert
+			$aydi = mysql_insert_id();
+			for ($i=0; $i<3 ; $i++) { 
+				if (!$corpname[$i]) {
+
+				} else {
+					mysql_insert(contacts_info_tb, array (
+							'company_id' => $aydi,
+							'contact_name' => $corpname[$i],
+							'position' => $corppos[$i],
+							'email' => $corpemail[$i],
+							'phone_number' => $corpphone[$i],
+							'mobile_number' => $corpmobile[$i],
+							'date_created' => date("Y-m-d H:i:s:"),
+							'dept_id' => 1
+					));
+				}
+			}
+
+			// start ng marketing insert
+			for ($i=0; $i<3 ; $i++) { 
+				if (!$markname[$i]) {
+
+				} else {
+					mysql_insert(contacts_info_tb, array (
+							'company_id' => $aydi,
+							'contact_name' => $markname[$i],
+							'position' => $markpos[$i],
+							'email' => $markemail[$i],
+							'phone_number' => $markphone[$i],
+							'mobile_number' => $markmobile[$i],
+							'date_created' => date("Y-m-d H:i:s:"),
+							'dept_id' => 2
+					));
+				}
+			}
+
+			// start ng sales insert
+			for ($i=0; $i<3 ; $i++) { 
+				if (!$salesname[$i]) {
+
+				} else {
+					mysql_insert(contacts_info_tb, array (
+							'company_id' => $aydi,
+							'contact_name' => $salesname[$i],
+							'position' => $salespos[$i],
+							'email' => $salesemail[$i],
+							'phone_number' => $salesphone[$i],
+							'mobile_number' => $salesmobile[$i],
+							'date_created' => date("Y-m-d H:i:s:"),
+							'dept_id' => 3
+					));
+				}
+			}
+
+			// start ng it insert
+			for ($i=0; $i<3 ; $i++) { 
+				if (!$itname[$i]) {
+
+				} else {
+					mysql_insert(contacts_info_tb, array (
+							'company_id' => $aydi,
+							'contact_name' => $itname[$i],
+							'position' => $itpos[$i],
+							'email' => $itemail[$i],
+							'phone_number' => $itphone[$i],
+							'mobile_number' => $itmobile[$i],
+							'date_created' => date("Y-m-d H:i:s:"),
+							'dept_id' => 4
+					));
+				}
+			}										
+			/*
+			$aydi = mysql_insert_id();
+			mysql_insert(contacts_info_tb, array (
+					'company_id' => $aydi,
+			));
+			*/
+		}	
+			/*
+			$replacement = array(" City");
+			$rep = str_replace($replacement, "", $city);
+
+			$sql = "SELECT id FROM ref_cities_tb WHERE name LIKE '%$rep%' AND province_id = '$province'";
+			$result = mysql_query($sql);
+			$value = mysql_fetch_assoc($result);
+			*/
+			
+			/*
+			$aydi = mysql_insert_id();
+
+			mysql_insert(property_units_tb, array (
+					'property_id' => $aydi,
+					'bedrooms' => $bed,
+					'bathrooms' => $bath,
+					'parking' => $park,
+					'floor_area' => $floor_area,
+					'date_created' => date("Y-m-d H:i:s:")
+			));
+			*/
+		
+		mysql_close($con);
+		
+		die;
+	}
+}
