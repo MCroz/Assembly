@@ -1,0 +1,1426 @@
+code segment
+assume cs:code;ds:code
+org 100h
+.386
+;-----------------
+clearscreen macro
+	pushad
+	mov ax,0600h
+	mov bh,07h
+	mov cx,0000h
+	mov dx,184fh
+	int 10h 
+	popad
+endm
+;----------------
+setcursorpos macro x,y 
+	pushad
+	mov ah,02
+	mov bh,0
+	mov dh,x
+	mov dl,y 
+	int 10h 
+	popad
+endm
+;---------------
+cout macro string
+	pushad
+	lea dx,string
+	mov ah,9
+	int 21h
+	popad
+endm
+;---------------
+userinterface macro a,b,c,d,e,f,g
+	clearscreen
+	setcursorpos 06h,21h
+	cout a 
+	setcursorpos 0ah,1dh
+	cout b
+	setcursorpos 0bh,1dh
+	cout c
+	setcursorpos 0ch,1dh
+	cout d
+	setcursorpos 0dh,1dh
+	cout e
+	setcursorpos 0eh,1dh
+	cout f
+	setcursorpos 10h,1ch
+	cout g
+endm
+;---------------
+pick macro
+	mov ah,1
+	int 21h
+endm
+;---------------
+binarymenu macro
+local label1,label2,label3,label4,label5,wronginput
+wronginput:
+	userinterface cbin,cbindec,cbinhex,cbinbase6,cbinbase12,cexit,cchoice
+	pick
+	cmp al,'1'
+	je label1
+	cmp al,'2'
+	je label2
+	cmp al,'3'
+	je label3
+	cmp al,'4'
+	je label4
+	cmp al,'5'
+	je label5
+	jmp wronginput
+label1:
+	binarydecimal
+label2:
+	binaryhexadecimal
+label3:
+	binarybase6
+label4:
+	binarybase12
+label5:
+ 	jmp start
+endm
+;---------------
+decimalmenu macro
+local label1,label2,label3,label4,label5,wronginput
+wronginput:
+	userinterface cdec,cdecbin,cdechex,cdecbase6,cdecbase12,cexit,cchoice
+	pick
+	cmp al,'1'
+	je label1
+	cmp al,'2'
+	je label2
+	cmp al,'3'
+	je label3
+	cmp al,'4'
+	je label4
+	cmp al,'5'
+	je label5
+	jmp wronginput
+label1:
+	decimalbinary
+label2:
+	decimalhexadecimal
+label3:
+	decimalbase6
+label4:
+	decimalbase12
+label5:
+ 	jmp start
+endm
+;---------------
+hexadecimalmenu macro
+local label1,label2,label3,label4,label5,wronginput
+wronginput:
+	userinterface chex,chexbin,chexdec,chexbase6,chexbase12,cexit,cchoice
+	pick
+	cmp al,'1'
+	je label1
+	cmp al,'2'
+	je label2
+	cmp al,'3'
+	je label3
+	cmp al,'4'
+	je label4
+	cmp al,'5'
+	je label5
+	jmp wronginput
+label1:
+	hexadecimalbinary
+label2:
+	hexadecimaldecimal
+label3:
+	hexadecimalbase6
+label4:
+	hexadecimalbase12
+label5:
+ 	jmp start
+endm
+;---------------
+base6menu macro
+local label1,label2,label3,label4,label5,wronginput
+wronginput:
+	userinterface cbase6,cbase6bin,cbase6hex,cbase6dec,cbase6base12,cexit,cchoice
+	pick
+	cmp al,'1'
+	je label1
+	cmp al,'2'
+	je label2
+	cmp al,'3'
+	je label3
+	cmp al,'4'
+	je label4
+	cmp al,'5'
+	je label5
+	jmp wronginput
+label1:
+	base6binary
+label2:
+	base6hexadecimal
+label3:
+	base6decimal
+label4:
+	base6base12
+label5:
+ 	jmp start
+endm
+;---------------
+base12menu macro
+local label1,label2,label3,label4,label5,wronginput
+wronginput:
+	userinterface cbase12,cbase12bin,cbase12hex,cbase12dec,cbase12base6,cexit,cchoice
+	pick
+	cmp al,'1'
+	je label1
+	cmp al,'2'
+	je label2
+	cmp al,'3'
+	je label3
+	cmp al,'4'
+	je label4
+	cmp al,'5'
+	je label5
+	jmp wronginput
+label1:
+label2:
+label3:
+label4:
+label5:
+ 	jmp start
+endm
+;---------------
+userinterface2 macro a,b,c,d 
+	clearscreen
+	setcursorpos 06h,23h
+	cout a 
+	setcursorpos 07h,22h
+	cout b 
+	setcursorpos 09h,1dh
+	cout c 
+	setcursorpos 0ah,1dh
+	cout d
+endm
+;---------------
+binarydecimal macro
+local label1,label2,cont
+label1:
+	userinterface2 header,bindechead,inpbin,outdec
+	setcursorpos 09h,3eh
+	binaryinput
+	setcursorpos 0ah,37h
+	cmp bl,0ah 
+	jge label2 
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	jmp cont
+label2:
+	mov ah,2
+	mov dl,31h
+	int 21h
+	mov bh,0ah
+	sub bl,bh
+	mov dl,bl 
+	add dl,30h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 
+endm
+;---------------
+binaryinput macro 
+    mov   ah,1
+    int   21h     
+
+    sub al,30h
+    shl al,3
+    mov bl,al
+
+    mov ah,1
+    int 21h
+
+    sub al,30h
+    shl al,2
+    add bl,al
+
+    mov ah,1
+    int 21h
+
+    sub al,30h
+    shl al,1
+    add bl,al
+
+    mov ah,1
+    int 21h
+
+    sub al,30h
+    add bl,al
+    xor bh,bh 
+endm
+;---------------
+tryagain macro a 
+	setcursorpos 0bh,1dh
+	cout a
+	pick
+endm
+;---------------
+binaryhexadecimal macro
+local label,label2,cont
+label1:
+	userinterface2 header,binhexhead,inpbin,outhex
+	setcursorpos 09h,3eh
+	binaryinput
+	setcursorpos 0ah,3bh
+	cmp bl,0ah
+	jge label2
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	jmp cont
+label2:
+	mov ah,2
+	mov dl,bl
+	add dl,37h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 	
+endm
+;---------------
+binarybase6 macro
+local label1,label2,cont
+label1:
+	userinterface2 header,binbase6head,inpbin,outbase6
+	setcursorpos 09h,3eh
+	binaryinput
+	setcursorpos 0ah,35h
+	cmp bl,06h
+	jge label2
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	jmp cont 
+label2:
+	xor dx,dx 
+	xor ax,ax
+	xor bh,bh 
+	mov ax,bx 
+	mov bx,06h 
+	div bx 
+	mov bx,ax 
+	mov cx,dx 
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 	
+endm
+;---------------
+binarybase12 macro
+local label1,label2,label3,cont
+label1:
+	userinterface2 header,binbase12head,inpbin,outbase12
+	setcursorpos 09h,3eh
+	binaryinput
+	setcursorpos 0ah,36h
+	cmp bl,0ch
+	jge label3
+	cmp bl,0ah
+	jge label2
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	jmp cont
+label2:
+	mov ah,2
+	mov dl,bl 
+	add dl,37h 
+	int 21h
+	jmp cont
+label3:
+	xor dx,dx 
+	xor bh,bh 
+	mov ax,bx 
+	mov bx,0ch 
+	div bx 
+	mov bx,ax 
+	mov cx,dx 
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 	
+endm
+;---------------
+decimalbinary macro
+local label1,cont
+label1:
+	userinterface2 header,decbinhead,inpdec,outbin
+	setcursorpos 09h,3bh
+	decimalinput
+	setcursorpos 0ah,36h
+	xor dx,dx
+	mov ax,bx 
+	mov bx,10h
+	div bx 
+	mov bx,ax 
+	mov cx,dx
+	mov bh,bl
+	shr bh,3
+	mov ah,2
+	mov dl,bh
+	add dl,30h
+	int 21h
+	mov bh,bl 
+	and bh,04h
+	shr bh,2
+	mov ah,2
+	mov dl,bh
+	add dl,30h
+	int 21h
+	mov bh,bl 
+	and bh,02h
+	shr bh,1
+	mov ah,2
+	mov dl,bh 
+	add dl,30h
+	int 21h
+	mov bh,bl
+	and bh,1
+	mov ah,2
+	mov dl,bh
+	add dl,30h
+	int 21h
+	mov ah,2
+	mov dl,20h
+	int 21h
+
+	mov ch,cl
+	shr ch,3
+	mov ah,2
+	mov dl,ch
+	add dl,30h
+	int 21h
+	mov ch,cl 
+	and ch,04h
+	shr ch,2
+	mov ah,2
+	mov dl,ch
+	add dl,30h
+	int 21h
+	mov ch,cl 
+	and ch,02h
+	shr ch,1
+	mov ah,2
+	mov dl,ch 
+	add dl,30h
+	int 21h
+	mov ch,cl
+	and ch,1
+	mov ah,2
+	mov dl,ch
+	add dl,30h
+	int 21h
+	
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 	
+endm
+;---------------
+decimalinput macro
+	mov ah,1
+	int 21h
+	sub al,30h
+	xor ah,ah
+	mov bx,0ah
+	mul bx
+	mov bx,ax
+	mov ah,1
+	int 21h
+	sub al,30h
+	xor ah,ah 
+	add bx,ax
+endm
+;---------------
+decimalhexadecimal macro
+local label1,label2,label3,cont
+label1:
+	userinterface2 header,dechexhead,inpdec,outhex
+	setcursorpos 09h,3bh
+	decimalinput
+	setcursorpos 0ah,3bh
+	mov ax,bx 
+	mov bx,10h
+	xor dx,dx 
+	div bx 
+	mov bx,ax 
+	mov cx,dx
+	mov ah,2
+	mov dl,bl
+	cmp dl,0
+	je label2
+	add dl,30h
+	int 21h
+label2:
+	mov dl,cl 
+	cmp dl,0ah
+	jge label3
+	add dl,30h
+	int 21h
+	jmp cont 
+label3:
+	add dl,37h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 
+endm
+;---------------
+decimalbase6 macro
+local label1,label2,label3,cont
+label1:
+	userinterface2 header,decbase6head,inpdec,outbase6
+	setcursorpos 09h,3bh
+	decimalinput
+	setcursorpos 0ah,35h
+	cmp bx,06h 
+	jge label2
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	jmp cont
+label2:
+	mov ax,bx 
+	mov bx,06h 
+	xor dx,dx 
+	div bx 
+	mov bx,ax 
+	mov cx,dx 
+	cmp bx,06h
+	jge label3
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h 
+	int 21h
+	jmp cont 
+label3:
+	mov ax,bx 
+	mov bx,06h 
+	xor dx,dx 
+	push cx 
+	div bx 
+	mov bx,ax 
+	mov cx,dx 
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h
+	int 21h
+	pop cx 
+	mov dl,cl
+	add dl,30h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 
+endm
+;---------------
+decimalbase12 macro
+local label1,label2,label3,label4,label5,cont
+label1:
+	userinterface2 header,decbase12head,inpdec,outbase12
+	setcursorpos 09h,3bh
+	decimalinput
+	setcursorpos 0ah,36h
+	cmp bx,0ch
+	jge label2
+	mov ah,2
+	mov dl,bl 
+	cmp dl,0ah
+	jge label5
+	add dl,30h
+	int 21h
+	jmp cont
+label5:
+	add dl,37h
+	int 21h
+	jmp cont 
+label2:
+	mov ax,bx 
+	mov bx,0ch
+	xor dx,dx
+	div bx 
+	mov bx,ax
+	mov cx,dx
+	cmp bx,00h 
+	je label3
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+label3:
+	cmp cx,0ah
+	jge label4
+	mov ah,2
+	mov dl,cl 
+	add dl,30h
+	int 21h
+	jmp cont 
+label4:
+	mov ah,2
+	mov dl,cl 
+	add dl,37h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 
+endm
+;---------------
+hexadecimalinput macro
+local label1,label2,end,numerical1,numerical2,small1,small2,capital1,capital2
+label1:
+	mov ah,1
+	int 21h
+	cmp al,'9'
+	jle numerical1
+	cmp al,'F'
+	jle capital1
+	cmp al,'f'
+	jle small1
+	jmp label1
+numerical1:
+	sub al,30h
+	xor ah,ah
+	mov bx,10h 
+	mul bx 
+	mov bx,ax
+	jmp label2
+capital1:
+	sub al,37h
+	xor ah,ah
+	mov bx,10h
+	mul bx 
+	mov bx,ax
+	jmp label2
+small1:
+	sub al,57h
+	xor ah,ah
+	mov bx,10h
+	mul bx 
+	mov bx,ax
+label2:
+	mov ah,1
+	int 21h
+	cmp al,'9'
+	jle numerical2
+	cmp al,'F'
+	jle capital2
+	cmp al,'f'
+	jle small2
+	jmp label2
+numerical2:
+	sub al,30h
+	xor ah,ah
+	add bx,ax
+	jmp end
+capital2:
+	sub al,37h
+	xor ah,ah
+	add bx,ax
+	jmp end 
+small2:
+	sub al,57h
+	xor ah,ah
+	add bx,ax
+end:	
+endm
+;---------------
+hexadecimalbinary macro
+local label1,cont
+label1:
+	userinterface2 header,hexbinhead,inphex,outbin
+	setcursorpos 09h,3fh
+	hexadecimalinput
+	setcursorpos 0ah,36h
+	xor dx,dx
+	mov ax,bx 
+	mov bx,10h
+	div bx 
+	mov bx,ax 
+	mov cx,dx
+	mov bh,bl
+	shr bh,3
+	mov ah,2
+	mov dl,bh
+	add dl,30h
+	int 21h
+	mov bh,bl 
+	and bh,04h
+	shr bh,2
+	mov ah,2
+	mov dl,bh
+	add dl,30h
+	int 21h
+	mov bh,bl 
+	and bh,02h
+	shr bh,1
+	mov ah,2
+	mov dl,bh 
+	add dl,30h
+	int 21h
+	mov bh,bl
+	and bh,1
+	mov ah,2
+	mov dl,bh
+	add dl,30h
+	int 21h
+	mov ah,2
+	mov dl,20h
+	int 21h
+
+	mov ch,cl
+	shr ch,3
+	mov ah,2
+	mov dl,ch
+	add dl,30h
+	int 21h
+	mov ch,cl 
+	and ch,04h
+	shr ch,2
+	mov ah,2
+	mov dl,ch
+	add dl,30h
+	int 21h
+	mov ch,cl 
+	and ch,02h
+	shr ch,1
+	mov ah,2
+	mov dl,ch 
+	add dl,30h
+	int 21h
+	mov ch,cl
+	and ch,1
+	mov ah,2
+	mov dl,ch
+	add dl,30h
+	int 21h	
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 	
+endm
+;---------------
+hexadecimaldecimal macro
+local label1,label2,label3,label4,cont
+label1:
+	userinterface2 header,hexdechead,inphex,outdec
+	setcursorpos 09h,3fh
+	hexadecimalinput
+	setcursorpos 0ah,37h
+	cmp bx,0ah
+	jge label2
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	jmp cont
+label2:
+	mov ax,bx 
+	mov bx,0ah
+	xor dx,dx 
+	div bx 
+	mov bx,ax 
+	mov cx,dx 
+	cmp bx,14h
+	jge label3
+	cmp bx,0ah
+	jge label4
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h
+	int 21h
+	jmp cont
+label3:
+	sub bx,14h
+	mov ah,2
+	mov dl,32h
+	int 21h
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h
+	int 21h
+	jmp cont
+label4:
+	sub bx,0ah
+	mov ah,2
+	mov dl,31h
+	int 21h
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 		
+endm
+;---------------
+hexadecimalbase6 macro
+local label1,label2,label3,label4,cont
+label1:
+	userinterface2 header,hexbase6head,inphex,outbase6
+	setcursorpos 09h,3fh
+	hexadecimalinput
+	setcursorpos 0ah,35h
+	cmp bx,06h 
+	jge label2
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	jmp cont
+label2:
+	mov ax,bx 
+	mov bx,06h 
+	xor dx,dx 
+	div bx 
+	mov bx,ax 
+	mov cx,dx 
+	cmp bx,06h
+	jge label3
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h 
+	int 21h
+	jmp cont 
+label3:
+	mov ax,bx 
+	mov bx,06h 
+	xor dx,dx 
+	div bx
+	push cx 
+	mov bx,ax 
+	mov cx,dx
+	cmp bx,06h 
+	jge label4 
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h
+	int 21h
+	pop cx 
+	mov dl,cl
+	add dl,30h
+	int 21h
+	jmp cont
+label4:
+	mov ax,bx 
+	mov bx,06h 
+	xor dx,dx 
+	div bx 
+	push cx 
+	mov bx,ax 
+	mov cx,dx 
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h
+	int 21h
+	pop cx 
+	mov dl,cl
+	add dl,30h
+	int 21h
+	pop cx 
+	mov dl,cl 
+	add dl,30h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 	
+endm
+;---------------
+hexadecimalbase12 macro
+local label1,label2,label3,label4,label5,label6,label7,label8,label9,label10,cont
+label1:
+	userinterface2 header,hexbase12head,inphex,outbase12
+	setcursorpos 09h,3fh
+	hexadecimalinput
+	setcursorpos 0ah,36h
+	cmp bx,0ch 
+	jge label2
+	cmp bx,0ah
+	jge label5
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	jmp cont
+label5:
+	mov ah,2
+	mov dl,bl
+	add dl,37h
+	int 21h
+	jmp cont
+label2:
+	mov ax,bx 
+	mov bx,0ch 
+	xor dx,dx 
+	div bx 
+	mov bx,ax 
+	mov cx,dx 
+	cmp bx,0ch
+	jge label3
+	cmp bx,0ah
+	jge label6
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	jmp label7
+label6:
+	mov ah,2
+	mov dl,bl
+	add dl,37h
+	int 21h
+label7:
+	cmp cx,0ah
+	jge label8
+	mov ah,2
+	mov dl,cl 
+	add dl,30h 
+	int 21h
+	jmp cont
+label8:
+	mov ah,2
+	mov dl,cl 
+	add dl,37h
+	int 21h 
+	jmp cont
+label3:
+	mov ax,bx 
+	mov bx,0ch 
+	xor dx,dx 
+	div bx
+	push cx 
+	mov bx,ax 
+	mov cx,dx 
+	mov ah,2
+	mov dl,bl
+	add dl,30h
+	int 21h
+	cmp cx,0ah
+	jge label4
+	mov ah,2
+	mov dl,cl 
+	add dl,30h
+	int 21h
+	jmp label9
+label4:
+	mov ah,2
+	mov dl,cl
+	add dl,37h
+	int 21h
+label9:
+	pop cx 
+	cmp cx,0ah
+	jge label10
+	mov ah,2
+	mov dl,cl 
+	add dl,30h
+	int 21h
+	jmp cont 
+label10:
+	mov ah,2
+	mov dl,cl
+	add dl,37h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 	
+endm
+;---------------
+base6input macro
+	mov ah,1
+	int 21h
+	sub al,30h
+	xor ah,ah
+	mov bx,06h
+	mul bx 
+	mov bx,ax
+	mov ah,1
+	int 21h
+	sub al,30h
+	xor ah,ah
+	add bx,ax
+endm
+;---------------
+base6binary macro
+local label1,cont
+label1:
+	userinterface2 header,base6binhead,inpbase6,outbin
+	setcursorpos 09h,39h
+	base6input
+	setcursorpos 0ah,36h
+	xor dx,dx
+	mov ax,bx 
+	mov bx,10h
+	div bx 
+	mov bx,ax 
+	mov cx,dx
+	mov bh,bl
+	shr bh,3
+	mov ah,2
+	mov dl,bh
+	add dl,30h
+	int 21h
+	mov bh,bl 
+	and bh,04h
+	shr bh,2
+	mov ah,2
+	mov dl,bh
+	add dl,30h
+	int 21h
+	mov bh,bl 
+	and bh,02h
+	shr bh,1
+	mov ah,2
+	mov dl,bh 
+	add dl,30h
+	int 21h
+	mov bh,bl
+	and bh,1
+	mov ah,2
+	mov dl,bh
+	add dl,30h
+	int 21h
+	mov ah,2
+	mov dl,20h
+	int 21h
+
+	mov ch,cl
+	shr ch,3
+	mov ah,2
+	mov dl,ch
+	add dl,30h
+	int 21h
+	mov ch,cl 
+	and ch,04h
+	shr ch,2
+	mov ah,2
+	mov dl,ch
+	add dl,30h
+	int 21h
+	mov ch,cl 
+	and ch,02h
+	shr ch,1
+	mov ah,2
+	mov dl,ch 
+	add dl,30h
+	int 21h
+	mov ch,cl
+	and ch,1
+	mov ah,2
+	mov dl,ch
+	add dl,30h
+	int 21h	
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 	
+endm
+;---------------
+base6hexadecimal macro
+local label1,label2,label3,cont
+label1:
+	userinterface2 header,base6hexhead,inpbase6,outhex
+	setcursorpos 09h,39h
+	base6input
+	setcursorpos 0ah,3bh
+	mov ax,bx 
+	mov bx,10h
+	xor dx,dx 
+	div bx 
+	mov bx,ax 
+	mov cx,dx
+	mov ah,2
+	mov dl,bl
+	cmp dl,0
+	je label2
+	add dl,30h
+	int 21h
+label2:
+	mov dl,cl 
+	cmp dl,0ah
+	jge label3
+	add dl,30h
+	int 21h
+	jmp cont 
+label3:
+	add dl,37h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 
+endm
+;---------------
+base6decimal macro
+local label1,cont
+label1:
+	userinterface2 header,base6dechead,inpbase6,outdec
+	setcursorpos 09h,39h
+	base6input
+	setcursorpos 0ah,37h
+	mov ax,bx
+	xor dx,dx 
+	mov cx,0ah
+	div cx 
+	mov bx,ax 
+	mov cx,dx 
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+	mov dl,cl 
+	add dl,30h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 
+endm
+;---------------
+base6base12 macro
+local label1,label2,label3,label4,cont
+label1:
+	userinterface2 header,base6base12head,inpbase6,outbase12
+	setcursorpos 09h,39h
+	base6input
+	setcursorpos 0ah,37h
+	cmp bx,0ch
+	jge label2
+	mov ah,2
+	mov dl,bl 
+	cmp dl,0ah
+	jge label5
+	add dl,30h
+	int 21h
+	jmp cont
+label5:
+	add dl,37h
+	int 21h
+	jmp cont 
+label2:
+	mov ax,bx 
+	mov bx,0ch
+	xor dx,dx
+	div bx 
+	mov bx,ax
+	mov cx,dx
+	cmp bx,00h 
+	je label3
+	mov ah,2
+	mov dl,bl 
+	add dl,30h
+	int 21h
+label3:
+	cmp cx,0ah
+	jge label4
+	mov ah,2
+	mov dl,cl 
+	add dl,30h
+	int 21h
+	jmp cont 
+label4:
+	mov ah,2
+	mov dl,cl 
+	add dl,37h
+	int 21h
+cont:
+	tryagain tryagain1
+	cmp al,'Y'
+	je label1
+	cmp al,'y'
+	je label1
+	cmp al,'N'
+	je start
+	cmp al,'n'
+	je start
+	jmp cont 
+endm
+;---------------
+begins:
+	jmp start
+
+
+		mainmenu 		db 		'Main Menu Conversion$'
+		mbin 			db 		'1.  Binary$'
+		mdec 			db 		'2.  Decimal$'
+		mhex 			db 		'3.  Hexadecimal$'
+		mbase6 			db 		'4.  Base6$'
+		mbase12 		db 		'5.  Base12$'
+		mexit 			db 		'6.  Exit$'
+		mchoice 		db 		'Enter your choice [1-6]: $'
+		cbin 			db 		'CONVERSION BINARY$'
+		cbindec 		db 		'1.  Binary to Decimal$'
+		cbinhex 		db 		'2.  Binary to Hexadecimal$'
+		cbinbase6 		db 		'3.  Binary to Base6$'
+		cbinbase12 		db 		'4.  Binary to Base12$'
+		cexit 			db  	'5.  Go Back to Main Menu$'
+		cchoice 		db 		'Enter your choice [1-5]: $'
+		cdec 			db 		'CONVERSION DECIMAL$'
+		cdecbin 		db 		'1.  Decimal to Binary$'
+		cdechex 		db 		'2.  Decimal to Hexadecimal$'
+		cdecbase6 		db 		'3.  Decimal to Base6$'
+		cdecbase12 		db 		'4.  Decimal to Base12$'
+		chex 			db 		'CONVERSION HEXADECIMAL$'
+		chexbin 		db 		'1.  Hexadecimal to Binary$'
+		chexdec 		db 		'2.  Hexadecimal to Decimal$'
+		chexbase6 		db 		'3.  Hexadecimal to Base6$'
+		chexbase12 		db 		'4.  Hexadecimal to Base12$'
+		cbase6 			db 		'CONVERSION BASE6$'
+		cbase6bin 		db 		'1.  Base6 to Binary$'
+		cbase6hex 		db 		'2.  Base6 to Hexadecimal$'
+		cbase6dec 		db 		'3.  Base6 to Decimal$'
+		cbase6base12 	db 		'4.  Base6 to Base12$'
+		cbase12 		db 		'CONVERSION BASE12$'
+		cbase12bin 		db 		'1.  Base12 to Binary$'
+		cbase12hex 		db 		'2.  Base12 to Hexadecimal$'
+		cbase12dec 		db 		'3.  Base12 to Decimal$'
+		cbase12base6 	db 		'4.  Base12 to Base6$'
+		header 			db 		'Conversion Menu$'
+		bindechead 		db 		'Binary to Decimal$'
+		inpbin 			db 		'Input Binary Number [0000-1111]: $'
+		outdec 			db 		'Converted Decimal Number: $'
+		tryagain1 		db 		'Do you want to try again? [Y/N]: $'
+		binhexhead 		db 		'Binary to Hexadecimal$'
+		outhex 			db 		'Converted Hexadecimal Number: $'
+		binbase6head 	db 		'Binary to Base6$'
+		outbase6 		db 		'Converted Base6 Number: $'
+		binbase12head 	db 		'Binary to Base12$'
+		outbase12 		db 		'Converted Base12 Number: $'
+		decbinhead 		db 		'Decimal to Binary$'
+		inpdec 			db 		'Input Decimal Number [00-99]: $'
+		outbin 			db 		'Converted Binary Number: $'
+		dechexhead 		db 		'Decimal to Hexadecimal$'
+		decbase6head 	db 		'Decimal to Base6$'
+		decbase12head 	db 		'Decimal to Base12$'
+		inphex 			db 		'Input Hexadecimal Number [00-FF]: $'
+		hexbinhead 		db 		'Hexadecimal to Binary$'
+		hexdechead 		db 		'Hexadecimal to Decimal$'
+		hexbase6head 	db 		'Hexadecimal to Base6$'
+		hexbase12head 	db 		'Hexadecimal to Base12$'
+		inpbase6 		db 		'Input Base6 Number [00-55]: $'
+		base6binhead 	db 		'Base6 to Binary$'
+		base6hexhead 	db 		'Base6 to Hexadecimal$'
+		base6dechead 	db 		'Base6 to Decimal$'
+		base6base12head db 		'Base6 to Base12$'
+
+start:
+
+	clearscreen
+	setcursorpos 6,1fh
+	cout mainmenu
+
+	setcursorpos 0ah,1dh
+	cout mbin
+
+	setcursorpos 0bh,1dh
+	cout mdec
+
+	setcursorpos 0ch,1dh 
+	cout mhex 
+
+	setcursorpos 0dh,1dh
+	cout mbase6
+
+	setcursorpos 0eh,1dh
+	cout mbase12 
+
+	setcursorpos 0fh,1dh
+	cout mexit
+
+mc:
+	setcursorpos 12h,1ch
+	cout mchoice
+
+	pick
+	cmp al,'1'
+	je one
+	cmp al,'2'
+	je two
+	cmp al,'3'
+	je three
+	cmp al,'4'
+	je four
+	cmp al,'5'
+	je five
+	cmp al,'6'
+	je six
+	jmp mc
+
+one:
+	binarymenu
+two:
+	decimalmenu
+three:
+	hexadecimalmenu
+four:
+	base6menu
+five:
+	base12menu
+six:
+ 	int 20h
+
+code ends
+end begins
